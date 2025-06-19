@@ -1,0 +1,21 @@
+{
+    "name": "HatchStudio.Localization.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f516391651c21ab429de8aead42f1d93",
+        "GUID:865173468004f724488b8e4b219bc17b",
+        "GUID:478a2357cc57436488a56e564b08d223",
+        "GUID:f349ad90de4c9db48a19b47d8dedb060"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

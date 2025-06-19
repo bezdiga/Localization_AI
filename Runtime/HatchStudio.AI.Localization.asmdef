@@ -1,0 +1,17 @@
+{
+    "name": "HatchStudio.AI.Localization",
+    "rootNamespace": "",
+    "references": [
+        "GUID:865173468004f724488b8e4b219bc17b",
+        "GUID:b558eadf0b3928b48bad4c6d50ccdf5f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

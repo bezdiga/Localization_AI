@@ -1,0 +1,12 @@
+{
+  "name": "com.hatchstudio.ai.localization",
+  "version": "1.0.0",
+  "displayName": "Localization AI",
+  "description": "A Unity package for AI-driven localization.",
+  "unity": "2021.3",
+  "author": {
+    "name": "HatchStudio",
+    "email": ""
+  },
+  "dependencies": {}
+}
