@@ -1,10 +1,10 @@
-﻿using HatchStudios.Input;
+﻿using System;
 
 namespace HatchStudio.Localization
 {
     public class InputGlyphProvider : ILocalizationGlyphProvider
     {
-        Func<string,string> GlyphGetter;
+        ActionGlyphGetter GlyphGetter;
         
         public InputGlyphProvider(ActionGlyphGetter glyphGetter)
         {
