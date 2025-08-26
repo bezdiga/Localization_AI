@@ -457,9 +457,11 @@ namespace HatchStudio.Editor.Localization
                     // Draw localization data
                     scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
                     {
+                        int sectionIndex = 0;
                         foreach (var section in GetSearchResult(language, searchString))
                         {
-                            DrawLocalizationKey(section,language);
+                            DrawLocalizationKey(section,language,sectionIndex);
+                            sectionIndex++;
                         }
                     }
                     EditorGUILayout.EndScrollView();
@@ -470,9 +472,9 @@ namespace HatchStudio.Editor.Localization
                 }
             }
         }
-        
-        float percent = 0;
-        private void DrawLocalizationKey(TempSheetSection section,TempLanguageData language)
+
+        private float[] percents;
+        private void DrawLocalizationKey(TempSheetSection section,TempLanguageData language,int sectionIndex)
         {
             if (section.Items == null || section.Items.Count == 0)
                 return;
@@ -489,12 +491,12 @@ namespace HatchStudio.Editor.Localization
                 {
                     var defaultEntry = language.Entry.Asset.Strings
                         .Where(x => x.SectionId == section.Id).ToList();
-                    percent = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
-                    Debug.LogError("Refresh " + percent.ToString("P"));
+                    percents[sectionIndex] = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
+                    Debug.LogError("Refresh " + percents[sectionIndex].ToString("P"));
                 }
 
                 EditorGUI.LabelField(new Rect(rect.x + rect.width - 240, rect.y, 80, rect.height),
-                    new GUIContent(percent.ToString("P")));
+                    new GUIContent(percents[sectionIndex].ToString("P")));
                 
                 if (windowData.DefaultLanguage != language)
                 {
@@ -503,7 +505,7 @@ namespace HatchStudio.Editor.Localization
                     {
                         var defaultEntry = windowData.DefaultLanguage.Entry.Asset.Strings
                             .Where(x => x.SectionId == section.Id).ToList();
-                        percent = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
+                        float percent = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
 
                         if (percent < 0.99f)
                         {
@@ -604,6 +606,7 @@ namespace HatchStudio.Editor.Localization
                 return searchResult;
             }
 
+            percents = new float[languageData.TableSheet.Count];
             return languageData.TableSheet;
         }
         
