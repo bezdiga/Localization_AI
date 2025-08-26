@@ -7,8 +7,7 @@ namespace HatchStudio.Localization
     public class LocalizeStringEvent : MonoBehaviour
     {
         [SerializeField] private LString m_LString = new LString();
-        private TextMeshProUGUI m_Text;
-        Action _UnsubscribeAction;
+        [SerializeField] private TextMeshProUGUI m_Text;
         private void OnEnable()
         { 
             m_LString.SubscribeToLocalization((loc) =>
@@ -21,5 +20,13 @@ namespace HatchStudio.Localization
         {
             m_LString.Dispose();
         }
+        
+        #if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if(m_Text == null)
+                m_Text = GetComponent<TextMeshProUGUI>();
+        }
+#endif
     }
 }
