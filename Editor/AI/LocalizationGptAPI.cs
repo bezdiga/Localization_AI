@@ -12,13 +12,66 @@ namespace HatchStudio.Editor.Localization.AI
 {
     public static class LocalizationGptAPI
     {
+        
+        static string apiKey =
+            "your-api-key-here";
+
+        public static async void TranslateSection(TempLanguageData from, TempLanguageData to, int sectionId,Action callback)
+        {
+            LocalizationRequestData data = LocalizationRequestUtility.CreateLocalizationDataForSection(from, to,sectionId);
+            
+            string prompt = data.CreateTranslationPrompt();
+            string result = await SendPromptAsync(apiKey, prompt);
+            RootObject response = JsonConvert.DeserializeObject<RootObject>(result);
+            
+
+            if (response != null && response.choices != null && response.choices.Count > 0)
+            {
+                string content = response.choices[0].message.content;
+                Debug.LogError("Context " + content);
+                if (IsValidJson(content))
+                {
+                    LocalizationRequestData translationData = JsonConvert.DeserializeObject<LocalizationRequestData>(content);
+                    
+                    if (translationData != null)
+                    {
+                        to.LoadSectionTranslation(translationData,sectionId);
+                        /*foreach (var section in translationData.sections)
+                        {
+                            Debug.Log("Sectiune: " + section.context);
+                            foreach (var translation in section.strings)
+                            {
+                                Debug.Log($"Key: {translation.key}, Value: {translation.value}");
+                            }
+                        }*/
+                    }
+                    else
+                    {
+                        Debug.LogError("Deserializarea răspunsului traducerii a eșuat.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("Răspunsul nu este JSON valid. Conținutul primit: " + content);
+                }
+            }
+            
+            foreach (var section in data.sections)
+            {
+                Debug.LogError("Section Name: "+ section.SectionName);
+                foreach (var str in section.strings)
+                {
+                    Debug.LogError("String Key: "+ str.key + " Value: "+ str.value);
+                }
+            }
+            callback.Invoke();
+        }
         public static async void Translate(TempLanguageData from, TempLanguageData to,Action callback)
         {
             LocalizationRequestData data = LocalizationRequestUtility.CreateLocalizationData(from, to);
             
             string prompt = data.CreateTranslationPrompt();
-            string apiKey =
-                "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";
+            
             string result = await SendPromptAsync(apiKey, prompt);
             
             Debug.LogError("Prompt "+ prompt);

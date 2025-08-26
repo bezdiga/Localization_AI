@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using HatchStudio.Editor.Localization.AI;
 using HatchStudio.Editors;
 using HatchStudio.Localization;
@@ -457,7 +459,7 @@ namespace HatchStudio.Editor.Localization
                     {
                         foreach (var section in GetSearchResult(language, searchString))
                         {
-                            DrawLocalizationKey(section);
+                            DrawLocalizationKey(section,language);
                         }
                     }
                     EditorGUILayout.EndScrollView();
@@ -469,7 +471,8 @@ namespace HatchStudio.Editor.Localization
             }
         }
         
-        private void DrawLocalizationKey(TempSheetSection section)
+        float percent = 0;
+        private void DrawLocalizationKey(TempSheetSection section,TempLanguageData language)
         {
             if (section.Items == null || section.Items.Count == 0)
                 return;
@@ -477,8 +480,57 @@ namespace HatchStudio.Editor.Localization
             using (new EditorDrawing.BorderBoxScope(false))
             {
                 string sectionName = section.Name.Replace(" ", "");
-                section.Reference.IsExpanded = EditorGUILayout.Foldout(section.Reference.IsExpanded, new GUIContent(sectionName), true, EditorDrawing.Styles.miniBoldLabelFoldout);
+                EditorGUILayout.BeginHorizontal();
+                Rect rect = EditorGUILayout.GetControlRect();
+                //section.Reference.IsExpanded = EditorGUILayout.Foldout(section.Reference.IsExpanded, new GUIContent(sectionName), true, EditorDrawing.Styles.miniBoldLabelFoldout);
+                section.Reference.IsExpanded = EditorGUI.Foldout(new Rect(rect.x, rect.y, rect.width - 240, rect.height), section.Reference.IsExpanded, new GUIContent(sectionName), true, EditorDrawing.Styles.miniBoldLabelFoldout);
 
+                if (GUI.Button(new Rect(rect.x + rect.width - 155, rect.y, 70, rect.height), "Refresh"))
+                {
+                    var defaultEntry = language.Entry.Asset.Strings
+                        .Where(x => x.SectionId == section.Id).ToList();
+                    percent = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
+                    Debug.LogError("Refresh " + percent.ToString("P"));
+                }
+
+                EditorGUI.LabelField(new Rect(rect.x + rect.width - 240, rect.y, 80, rect.height),
+                    new GUIContent(percent.ToString("P")));
+                
+                if (windowData.DefaultLanguage != language)
+                {
+
+                    if (GUI.Button(new Rect(rect.x + rect.width - 80, rect.y, 80, rect.height), "Translate"))
+                    {
+                        var defaultEntry = windowData.DefaultLanguage.Entry.Asset.Strings
+                            .Where(x => x.SectionId == section.Id).ToList();
+                        percent = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
+
+                        if (percent < 0.99f)
+                        {
+                            EditorUtility.DisplayDialog("Attention",
+                                $"The Section {sectionName} by default language [{windowData.DefaultLanguage.Entry.LanguageName}] must be 100% completed for a full translation.\n Current Section progress {percent.ToString("P")}",
+                                "OK");
+                            return;
+                        }
+                        else
+                        {
+                            isLoading = true;
+                            _progressSimulator = new ProgressSimulator(statusMessages, 0.25f);
+                            _progressSimulator.OnStatusChanged += () => Repaint();
+                            _progressSimulator.Start();
+
+                            LocalizationGptAPI.TranslateSection(windowData.DefaultLanguage, language, section.Id, () =>
+                            {
+                                Repaint();
+                                _progressSimulator.Stop();
+                                isLoading = false;
+                            });
+
+                        }
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
                 // Show section keys when expanded
                 if (section.Reference.IsExpanded)
                 {

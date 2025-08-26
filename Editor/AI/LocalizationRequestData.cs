@@ -30,6 +30,42 @@ namespace HatchStudio.Editor.Localization.AI
 
     internal static class LocalizationRequestUtility
     {
+        public static LocalizationRequestData CreateLocalizationDataForSection(TempLanguageData source, TempLanguageData target, int sectionId)
+        {
+            LocalizationRequestData requestData = new LocalizationRequestData();
+            requestData.sourceLanguage = source.Entry.LanguageName;
+            requestData.targetLanguage = target.Entry.LanguageName;
+            requestData.sections = new LocalizationRequestData.LocalizationSection[1];
+            var section = source.TableSheet.FirstOrDefault(x => x.Id == sectionId);
+            IList<LocalizationString> strings = new List<LocalizationString>();
+            string sectionKey = section.Name.Replace(" ", "");
+            
+            foreach (var item in section.Items)
+            {
+                string itemKey = item.Key.Replace(" ", "");
+                string key = sectionKey + "." + itemKey;
+                strings.Add(new()
+                {
+                    SectionId = section.Id,
+                    EntryId = item.Id,
+                    key = key,
+                    value = item.Value
+                });
+                requestData.sections[0] = (new LocalizationRequestData.LocalizationSection()
+                {
+                    SectionName = section.Name,
+                    context = section.Reference.Context,
+                    strings = strings.Select(x => new LocalizationString
+                    {
+                        SectionId = x.SectionId,
+                        EntryId = x.EntryId,
+                        key = x.key,
+                        value = x.value
+                    }).ToArray()
+                });
+            }
+            return requestData;
+        }
         public static LocalizationRequestData CreateLocalizationData(TempLanguageData source, TempLanguageData target)
         {
             int index = 0;
@@ -97,6 +133,31 @@ namespace HatchStudio.Editor.Localization.AI
                     itemIndex++;
                 }
                 sectionIndex++;
+            }
+            asset.Strings = new(strings);
+        }
+
+        public static void LoadSectionTranslation(this TempLanguageData languageData,LocalizationRequestData requestData,int sectionId)
+        {
+            LocalizationLanguage asset = languageData.Entry.Asset;
+            IList<LocalizationString> strings = new List<LocalizationString>();
+            var section = languageData.TableSheet.FirstOrDefault(x => x.Id == sectionId);
+            
+            int itemIndex = 0;
+            string sectionKey = section.Name.Replace(" ", "");
+            foreach (var item in section.Items)
+            {
+                string itemKey = item.Key.Replace(" ", "");
+                string key = sectionKey + "." + itemKey;
+                strings.Add(new()
+                {
+                    SectionId = section.Id,
+                    EntryId = item.Id,
+                    key = key,
+                    value = requestData.sections[0].strings[itemIndex].value
+                });
+                item.Value = requestData.sections[0].strings[itemIndex].value;
+                itemIndex++;
             }
             asset.Strings = new(strings);
         }
