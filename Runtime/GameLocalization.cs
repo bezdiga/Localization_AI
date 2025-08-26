@@ -74,7 +74,7 @@ namespace HatchStudio.Localization
             }
 
             _languageDict = GenerateLanguageDictionary(languageIndex);
-            OnLanguageChange?.Invoke(languageIndex);
+            
             foreach (var subscribe in _subscribers)
             {
                 var text = GetLocalizedString(subscribe.Key);
@@ -84,6 +84,7 @@ namespace HatchStudio.Localization
                     callback.Invoke(text);
                 }
             }
+            OnLanguageChange?.Invoke(languageIndex);
         }
         
         private string GetLocalizedString(string key)
