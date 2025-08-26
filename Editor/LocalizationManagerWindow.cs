@@ -67,6 +67,7 @@ namespace HatchStudio.Editor.Localization
             {
                 InitializeTreeView();
             }
+            percents = new float[windowData.DefaultLanguage.TableSheet.Count];
         }
 
         
@@ -491,7 +492,8 @@ namespace HatchStudio.Editor.Localization
                 {
                     var defaultEntry = language.Entry.Asset.Strings
                         .Where(x => x.SectionId == section.Id).ToList();
-                    percents[sectionIndex] = (defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
+                    percents[sectionIndex] = (float)(defaultEntry.Count(x => !String.IsNullOrEmpty(x.value))) / defaultEntry.Count;
+                    Debug.LogError("Strings Count: " + defaultEntry.Count + " Completed: " + defaultEntry.Count(x => !String.IsNullOrEmpty(x.value)));
                     Debug.LogError("Refresh " + percents[sectionIndex].ToString("P"));
                 }
 
@@ -605,8 +607,7 @@ namespace HatchStudio.Editor.Localization
 
                 return searchResult;
             }
-
-            percents = new float[languageData.TableSheet.Count];
+            
             return languageData.TableSheet;
         }
         
